@@ -21,26 +21,42 @@ function formatTime(seconds) {
 async function pingCommand(sock, chatId, message) {
     try {
         const start = Date.now();
-        await sock.sendMessage(chatId, { text: 'Pong!' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Testing ping...' }, { quoted: message });
         const end = Date.now();
         const ping = Math.round((end - start) / 2);
 
         const uptimeInSeconds = process.uptime();
         const uptimeFormatted = formatTime(uptimeInSeconds);
+        
+        const totalMem = Math.round(os.totalmem() / (1024 * 1024));
+        const freeMem = Math.round(os.freemem() / (1024 * 1024));
+        const usedMem = totalMem - freeMem;
+        const memPercent = Math.round((usedMem / totalMem) * 100);
 
-        const botInfo = `
-┏━━〔 🤖 𝐊𝐧𝐢𝐠𝐡𝐭𝐁𝐨𝐭-𝐌𝐃 〕━━┓
-┃ 🚀 Ping     : ${ping} ms
-┃ ⏱️ Uptime   : ${uptimeFormatted}
-┃ 🔖 Version  : v${settings.version}
-┗━━━━━━━━━━━━━━━━━━━┛`.trim();
+        const botInfo = `╭╺╼━━─━■■━━─━╾╸
+┣⬣ BOT PERFORMANCE
+┣➤ Ping: ${ping} ms
+┣➤ Uptime: ${uptimeFormatted}
+┣➤ Version: v${settings.version}
+┣➤ Memory: ${usedMem}MB/${totalMem}MB (${memPercent}%)
+┣➤ Platform: ${os.platform()} ${os.arch()}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-        // Reply to the original message with the bot info
-        await sock.sendMessage(chatId, { text: botInfo},{ quoted: message });
+> DARK EMPIRE TECH`;
+
+        await sock.sendMessage(chatId, { text: botInfo }, { quoted: message });
 
     } catch (error) {
-        console.error('Error in ping command:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to get bot status.' });
+        console.log('Error in ping command:', error);
+        const errorMessage = `╭╺╼━━─━■■━━─━╾╸
+┣⬣ ERROR
+┣➤ Failed to get bot status
+┣➤ ${error.message}
+╰━━━━━━━━━━━━━━━━━━━━⬣
+
+> DARK EMPIRE TECH`;
+        
+        await sock.sendMessage(chatId, { text: errorMessage });
     }
 }
 

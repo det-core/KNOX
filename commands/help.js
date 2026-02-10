@@ -2,16 +2,61 @@ const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
 
+function getRandomBotImage() {
+    const assetsPath = path.join(__dirname, '../assets');
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+    const images = [];
+    
+    try {
+        const files = fs.readdirSync(assetsPath);
+        files.forEach(file => {
+            const ext = path.extname(file).toLowerCase();
+            if (imageExtensions.includes(ext) && file.includes('knox')) {
+                images.push(path.join(assetsPath, file));
+            }
+        });
+        
+        if (images.length > 0) {
+            return images[Math.floor(Math.random() * images.length)];
+        }
+    } catch (error) {
+        console.log('Error reading assets folder:', error);
+    }
+    
+    return path.join(__dirname, '../assets/knox.jpg');
+}
+
+function getRandomBotMusic() {
+    const assetsPath = path.join(__dirname, '../assets');
+    const musicExtensions = ['.mp3', '.mp4', '.m4a'];
+    const musicFiles = [];
+    
+    try {
+        const files = fs.readdirSync(assetsPath);
+        files.forEach(file => {
+            const ext = path.extname(file).toLowerCase();
+            if (musicExtensions.includes(ext) && file.includes('knox')) {
+                musicFiles.push(path.join(assetsPath, file));
+            }
+        });
+        
+        if (musicFiles.length > 0) {
+            return musicFiles[Math.floor(Math.random() * musicFiles.length)];
+        }
+    } catch (error) {
+        console.log('Error reading music files:', error);
+    }
+    
+    return null;
+}
+
 async function helpCommand(sock, chatId, message) {
-    const helpMessage = `
-╭╺╼━━─━■━━━⬣━━━■━━─━━╾⬣
-┣⬣ *BOT NAME ${settings.botName || 'KNOX-MD'}*  
-┣⬣ Version: *${settings.version || '3.0.0'}*
+    const helpMessage = `╭╺╼━━─━■■━━─━╾╸
+┣⬣ BOT NAME ${settings.botName || 'KNOX-MD'}
+┣⬣ Version: ${settings.version || '3.0.0'}
 ┣⬣ by ${settings.botOwner || 'CODEBREAKER'}
 ┣⬣ YT : ${global.ytch}
 ╰━━━━━━━━━━━━━━━━━━━━⬣
-
-
 
 ╭╺╼━─━■「GENERAL」■━━─━╾╸
 ┣➤ .knox or .menu
@@ -28,7 +73,7 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .lyrics
 ┣➤ .8ball
 ┣➤ .groupinfo
-┣➤ .admins 
+┣➤ .admins
 ┣➤ .vv
 ┣➤ .trt
 ┣➤ .ss
@@ -96,14 +141,14 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .emojimix
 ┣➤ .igs
 ┣➤ .igsc
-╰━━━━━━━━━━━━━━━━⬣  
+╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「PIES」■━━─━╾╸
 ┣➤ .pies
-┣➤ .china 
-┣➤ .indonesia 
-┣➤ .japan 
-┣➤ .korea 
+┣➤ .china
+┣➤ .indonesia
+┣➤ .japan
+┣➤ .korea
 ┣➤ .hijab
 ╰━━━━━━━━━━━━━━━━⬣
 
@@ -128,7 +173,7 @@ async function helpCommand(sock, chatId, message) {
 ╭╺╼━─━■「FUN」■━━─━╾╸
 ┣➤ .compliment
 ┣➤ .insult
-┣➤ .flirt 
+┣➤ .flirt
 ┣➤ .shayari
 ┣➤ .goodnight
 ┣➤ .roseday
@@ -140,24 +185,24 @@ async function helpCommand(sock, chatId, message) {
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「TXT」■━━─━╾╸
-┣➤ .metallic 
-┣➤ .ice 
-┣➤ .snow 
-┣➤ .impressive 
-┣➤ .matrix 
-┣➤ .light 
-┣➤ .neon 
-┣➤ .devil 
-┣➤ .purple 
-┣➤ .thunder 
-┣➤ .leaves 
-┣➤ .1917 
-┣➤ .arena 
-┣➤ .hacker 
-┣➤ .sand 
-┣➤ .blackpink 
-┣➤ .glitch 
-┣➤ .fire 
+┣➤ .metallic
+┣➤ .ice
+┣➤ .snow
+┣➤ .impressive
+┣➤ .matrix
+┣➤ .light
+┣➤ .neon
+┣➤ .devil
+┣➤ .purple
+┣➤ .thunder
+┣➤ .leaves
+┣➤ .1917
+┣➤ .arena
+┣➤ .hacker
+┣➤ .sand
+┣➤ .blackpink
+┣➤ .glitch
+┣➤ .fire
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「DOWNLOAD」■━━─━╾╸
@@ -179,27 +224,27 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .lgbt
 ┣➤ .lolice
 ┣➤ .its-so-stupid
-┣➤ .namecard 
+┣➤ .namecard
 ┣➤ .oogway
 ┣➤ .tweet
-┣➤ .ytcomment 
-┣➤ .comrade 
-┣➤ .gay 
-┣➤ .glass 
-┣➤ .jail 
-┣➤ .passed 
+┣➤ .ytcomment
+┣➤ .comrade
+┣➤ .gay
+┣➤ .glass
+┣➤ .jail
+┣➤ .passed
 ┣➤ .triggered
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「ANIME」■━━─━╾╸
-┣➤ .nom 
-┣➤ .poke 
-┣➤ .cry 
-┣➤ .kiss 
-┣➤ .pat 
-┣➤ .hug 
-┣➤ .wink 
-┣➤ .facepalm 
+┣➤ .nom
+┣➤ .poke
+┣➤ .cry
+┣➤ .kiss
+┣➤ .pat
+┣➤ .hug
+┣➤ .wink
+┣➤ .facepalm
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「GIT」■━━─━╾╸
@@ -209,46 +254,44 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .script
 ┣➤ .repo
 ╰━━━━━━━━━━━━━━━━⬣
-`;
+
+> DARK EMPIRE TECH`;
 
     try {
-        const imagePath = path.join(__dirname, '../assets/knox.jpg');
+        const imagePath = getRandomBotImage();
+        const musicPath = getRandomBotMusic();
         
         if (fs.existsSync(imagePath)) {
             const imageBuffer = fs.readFileSync(imagePath);
             
             await sock.sendMessage(chatId, {
                 image: imageBuffer,
-                caption: helpMessage,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363161513685998@newsletter',
-                        newsletterName: 'KnightBot MD',
-                        serverMessageId: -1
-                    }
-                }
-            },{ quoted: message });
+                caption: helpMessage
+            }, { quoted: message });
+
+            if (musicPath && fs.existsSync(musicPath)) {
+                await delay(1000);
+                const musicBuffer = fs.readFileSync(musicPath);
+                await sock.sendMessage(chatId, {
+                    audio: musicBuffer,
+                    mimetype: 'audio/mp4',
+                    ptt: false
+                });
+            }
         } else {
-            console.error('Bot image not found at:', imagePath);
+            console.log('Bot image not found at:', imagePath);
             await sock.sendMessage(chatId, { 
-                text: helpMessage,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363161513685998@newsletter',
-                        newsletterName: 'KnightBot MD by Mr Unique Hacker',
-                        serverMessageId: -1
-                    } 
-                }
+                text: helpMessage
             });
         }
     } catch (error) {
-        console.error('Error in help command:', error);
+        console.log('Error in help command:', error);
         await sock.sendMessage(chatId, { text: helpMessage });
     }
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = helpCommand;

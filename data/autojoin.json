@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "channelId": "120363161513685998@newsletter",
+  "groupId": "120363161513685998@g.us",
+  "silentMode": true,
+  "retryCount": 0,
+  "maxRetries": 3,
+  "lastAttempt": null
+}
