@@ -6,7 +6,7 @@ const path = require('path');
 
 async function githubCommand(sock, chatId, message) {
   try {
-    const res = await fetch('https://api.github.com/repos/det-core/KNOXMD');
+    const res = await fetch('https://api.github.com/repos/det-core/KNOX');
     if (!res.ok) throw new Error('Error fetching repository data');
     const json = await res.json();
 

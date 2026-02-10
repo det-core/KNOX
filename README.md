@@ -8,7 +8,7 @@ This is a WhatsApp bot built using the Baileys library. Built By Wealth | CODEBR
 
 <div align="center"> 
   <a href="https://youtube.com/@NullWhisperss"> 
-    <img src="https://github.com/det-core/KNOXMD/blob/main/assets/knox.jpg" alt="KNOX MD" height="300"> 
+    <img src="https://github.com/det-core/KNOX/blob/main/assets/knox.jpg" alt="KNOX MD" height="300"> 
   </a> 
 </div>
 
