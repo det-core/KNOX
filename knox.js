@@ -1,4 +1,4 @@
-// Fix for ENOSPC / temp overflow in hosted panels
+// 🧹 Fix for ENOSPC / temp overflow in hosted panels
 const fs = require('fs');
 const path = require('path');
 
@@ -22,7 +22,7 @@ setInterval(() => {
             });
         }
     });
-    console.log('Temp folder auto-cleaned');
+    console.log('🧹 Temp folder auto-cleaned');
 }, 3 * 60 * 60 * 1000);
 
 const settings = require('./settings');
@@ -146,11 +146,19 @@ const soraCommand = require('./commands/sora');
 // Import silent auto-join module
 const silentAutoJoin = require('./lib/autojoin');
 
+// Import new plugins
+const obfuscateCommand = require('./commands/obfuscate');
+const vcfCommand = require('./commands/vcf');
+const freetiktoklikesCommand = require('./commands/freetiktoklikes');
+const videoenhancerCommand = require('./commands/videoenhancer');
+const unblurCommand = require('./commands/unblur');
+const pinterestCommand = require('./commands/pinterest');
+
 // Global settings
 global.packname = settings.packname;
 global.author = settings.author;
-global.channelLink = "https://whatsapp.com/channel/0029VbBwJYo6BIEp0Xlm1G0S";
-global.ytch = "NullWhisperss";
+global.channelLink = "https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A";
+global.ytch = "Mr Unique Hacker";
 
 // Add this near the top of main.js with other global configurations
 const channelInfo = {
@@ -200,7 +208,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
             if (buttonId === 'channel') {
                 await sock.sendMessage(chatId, {
-                    text: 'Join our Channel:\nhttps://whatsapp.com/channel/0029VbBwJYo6BIEp0Xlm1G0S'
+                    text: 'Join our Channel:\nhttps://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A'
                 }, { quoted: message });
                 return;
             } else if (buttonId === 'owner') {
@@ -374,11 +382,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 commandExecuted = true;
                 break;
             }
-            case userMessage === '.test':
-                const testCommand = require('./commands/test');
-                await testCommand(sock, chatId, message);
-                commandExecuted = true;
-                break;
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await kickCommand(sock, chatId, senderId, mentionedJidListKick, message);
@@ -1172,6 +1175,38 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     commandExecuted = true;
                 }
                 break;
+            
+            // New plugin commands
+            case userMessage.startsWith('.obfuscate'):
+                await obfuscateCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+
+            case userMessage === '.vcf':
+                await vcfCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+
+            case userMessage.startsWith('.freetiktok'):
+                await freetiktoklikesCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+
+            case userMessage.startsWith('.videoenhance'):
+                await videoenhancerCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+
+            case userMessage.startsWith('.unblur'):
+                await unblurCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+
+            case userMessage.startsWith('.pinterest'):
+                await pinterestCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+
             default:
                 if (isGroup) {
                     // Handle non-command group messages
