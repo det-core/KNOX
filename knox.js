@@ -1202,7 +1202,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 commandExecuted = true;
                 break;
 
-            case userMessage.startsWith('.pinterest'):
+            case userMessage.startsWith('.pin'):
                 await pinterestCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;

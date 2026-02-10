@@ -114,6 +114,7 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .setgdesc
 ┣➤ .setgname
 ┣➤ .setgpp
+┣➤ .vcf
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「OWNER」■━━─━╾╸
@@ -134,7 +135,7 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .pmblocker setmsg
 ┣➤ .setmention
 ┣➤ .mention
-┣➤ .autojoin
+┣➤ .obfuscate 
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「IMG/STICKER」■━━─━╾╸
@@ -150,6 +151,8 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .emojimix
 ┣➤ .igs
 ┣➤ .igsc
+┣➤ .unblur 
+┣➤ .videoenhance
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「PIES」■━━─━╾╸
