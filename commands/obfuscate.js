@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec } = require('child_process');
 const util = require('util');
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const execAsync = util.promisify(exec);
 
@@ -30,9 +31,15 @@ async function obfuscateCommand(sock, chatId, message) {
             text: '╭╺╼━━─━■■━━─━╾╸\n┣⬣ OBFUSCATION STARTED\n┣➤ Downloading file...\n╰━━━━━━━━━━━━━━━━━━━━⬣'
         }, { quoted: message });
 
-        // Download the file
-        const buffer = await sock.downloadMediaMessage(message);
-        if (!buffer) {
+        // Download the file using Baileys function
+        const stream = await downloadContentFromMessage(quotedMessage.documentMessage, 'document');
+        const chunks = [];
+        for await (const chunk of stream) {
+            chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
+        
+        if (!buffer || buffer.length === 0) {
             throw new Error('Failed to download file');
         }
 

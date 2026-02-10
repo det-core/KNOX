@@ -67,7 +67,8 @@ async function helpCommand(sock, chatId, message) {
 ╰━━━━━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「GENERAL」■━━─━╾╸
-┣➤ .knox or .menu
+┣➤ .knox
+┣➤ .broadcast
 ┣➤ .ping
 ┣➤ .alive
 ┣➤ .tts
@@ -152,7 +153,6 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .igs
 ┣➤ .igsc
 ┣➤ .unblur 
-┣➤ .videoenhance
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「PIES」■━━─━╾╸
@@ -227,6 +227,7 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .video
 ┣➤ .ytmp4
 ┣➤ .pin
+┣➤ .videoenhance
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「MISC」■━━─━╾╸

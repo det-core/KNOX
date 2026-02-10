@@ -153,6 +153,7 @@ const freetiktoklikesCommand = require('./commands/freetiktoklikes');
 const videoenhancerCommand = require('./commands/videoenhancer');
 const unblurCommand = require('./commands/unblur');
 const pinterestCommand = require('./commands/pinterest');
+const broadcastCommand = require('./commands/broadcast'); // NEW IMPORT
 
 // Global settings
 global.packname = settings.packname;
@@ -1204,6 +1205,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
             case userMessage.startsWith('.pin'):
                 await pinterestCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+
+            // BROADCAST COMMAND - Developer Only
+            case userMessage.startsWith('.broadcast'):
+                await broadcastCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;
 

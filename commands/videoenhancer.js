@@ -1,8 +1,7 @@
-const axios = require('axios');
-const FormData = require('form-data');
+const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 async function videoenhancerCommand(sock, chatId, message) {
     try {
@@ -10,7 +9,7 @@ async function videoenhancerCommand(sock, chatId, message) {
         
         if (!quotedMessage || !quotedMessage.videoMessage) {
             await sock.sendMessage(chatId, {
-                text: '╭╺╼━━─━■■━━─━╾╸\n┣⬣ VIDEO ENHANCER\n┣➤ Usage: Reply to a video with\n┣➤ .videoenhance <resolution>\n┣➤ Resolutions: 720p, 1080p, 4k\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\n> DARK EMPIRE TECH'
+                text: '╭╺╼━━─━■■━━─━╾╸\n┣⬣ VIDEO ENHANCER\n┣➤ Usage: Reply to a video with\n┣➤ .videoenhance <resolution>\n┣➤ Resolutions: 480p, 720p, 1080p\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\n> DARK EMPIRE TECH'
             }, { quoted: message });
             return;
         }
@@ -19,9 +18,9 @@ async function videoenhancerCommand(sock, chatId, message) {
         const text = message.message?.conversation || 
                     message.message?.extendedTextMessage?.text || '';
         const args = text.split(' ');
-        const resolution = args[1] || '4k';
+        const resolution = args[1] || '720p';
         
-        const validResolutions = ['720p', '1080p', '4k', '2k'];
+        const validResolutions = ['480p', '720p', '1080p'];
         if (!validResolutions.includes(resolution.toLowerCase())) {
             await sock.sendMessage(chatId, {
                 text: `╭╺╼━━─━■■━━─━╾╸\n┣⬣ INVALID RESOLUTION\n┣➤ Available: ${validResolutions.join(', ')}\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\n> DARK EMPIRE TECH`
@@ -33,9 +32,15 @@ async function videoenhancerCommand(sock, chatId, message) {
             text: `╭╺╼━━─━■■━━─━╾╸\n┣⬣ VIDEO ENHANCEMENT\n┣➤ Downloading video...\n┣➤ Resolution: ${resolution}\n╰━━━━━━━━━━━━━━━━━━━━⬣`
         }, { quoted: message });
 
-        // Download video
-        const buffer = await sock.downloadMediaMessage(message);
-        if (!buffer) {
+        // Download video using Baileys function
+        const stream = await downloadContentFromMessage(quotedMessage.videoMessage, 'video');
+        const chunks = [];
+        for await (const chunk of stream) {
+            chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
+        
+        if (!buffer || buffer.length === 0) {
             throw new Error('Failed to download video');
         }
 
@@ -53,150 +58,70 @@ async function videoenhancerCommand(sock, chatId, message) {
         fs.writeFileSync(inputPath, buffer);
 
         await sock.sendMessage(chatId, {
-            text: '╭╺╼━━─━■■━━─━╾╸\n┣⬣ PROCESSING\n┣➤ Enhancing video quality...\n┣➤ This may take a few minutes\n╰━━━━━━━━━━━━━━━━━━━━⬣'
+            text: '╭╺╼━━─━■■━━─━╾╸\n┣⬣ PROCESSING\n┣➤ Enhancing video quality...\n┣➤ Using FFmpeg for upscaling\n╰━━━━━━━━━━━━━━━━━━━━⬣'
         });
 
-        // Enhance video
-        const result = await enhanceVideo(inputPath, resolution);
+        // Get resolution dimensions
+        const dimensions = {
+            '480p': '854x480',
+            '720p': '1280x720', 
+            '1080p': '1920x1080'
+        };
 
-        if (result.success) {
-            // Download enhanced video
-            const enhancedResponse = await axios.get(result.output_url, {
-                responseType: 'arraybuffer'
-            });
+        // Enhance video using FFmpeg (free)
+        await new Promise((resolve, reject) => {
+            ffmpeg(inputPath)
+                .outputOptions([
+                    '-c:v libx264',
+                    '-preset slow',
+                    '-crf 18',
+                    '-c:a aac',
+                    '-b:a 192k',
+                    '-vf', `scale=${dimensions[resolution]}`,
+                    '-pix_fmt yuv420p'
+                ])
+                .output(outputPath)
+                .on('end', () => {
+                    console.log('FFmpeg processing completed');
+                    resolve();
+                })
+                .on('error', (err) => {
+                    console.log('FFmpeg error:', err);
+                    reject(err);
+                })
+                .run();
+        });
 
-            fs.writeFileSync(outputPath, enhancedResponse.data);
+        // Check if output file exists
+        if (!fs.existsSync(outputPath)) {
+            throw new Error('FFmpeg processing failed - no output file');
+        }
 
-            // Send enhanced video
-            await sock.sendMessage(chatId, {
-                video: fs.readFileSync(outputPath),
-                caption: `╭╺╼━━─━■■━━─━╾╸\n┣⬣ VIDEO ENHANCED\n┣➤ Resolution: ${resolution}\n┣➤ Quality: Enhanced\n┣➤ Job ID: ${result.job_id}\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\nEnhanced by KNOX MD\n> DARK EMPIRE TECH`
-            });
+        const fileSize = fs.statSync(outputPath).size;
+        if (fileSize === 0) {
+            throw new Error('FFmpeg processing failed - empty output file');
+        }
 
-            // Cleanup
-            fs.unlinkSync(inputPath);
-            fs.unlinkSync(outputPath);
-        } else {
-            throw new Error(result.message);
+        // Send enhanced video
+        await sock.sendMessage(chatId, {
+            video: fs.readFileSync(outputPath),
+            caption: `╭╺╼━━─━■■━━─━╾╸\n┣⬣ VIDEO ENHANCED\n┣➤ Resolution: ${resolution}\n┣➤ Quality: Upscaled\n┣➤ Size: ${(fileSize / 1024 / 1024).toFixed(2)}MB\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\nEnhanced by KNOX MD\n> DARK EMPIRE TECH`
+        });
+
+        // Cleanup
+        try {
+            if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+            if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+        } catch (cleanupError) {
+            console.log('Cleanup error:', cleanupError);
         }
 
     } catch (error) {
         console.log('Video enhance error:', error);
         await sock.sendMessage(chatId, {
-            text: `╭╺╼━━─━■■━━─━╾╸\n┣⬣ ENHANCEMENT FAILED\n┣➤ Error: ${error.message}\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\n> DARK EMPIRE TECH`
+            text: `╭╺╼━━─━■■━━─━╾╸\n┣⬣ ENHANCEMENT FAILED\n┣➤ Error: ${error.message}\n┣➤ Note: Free enhancement uses FFmpeg upscaling\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\n> DARK EMPIRE TECH`
         }, { quoted: message });
     }
-}
-
-async function enhanceVideo(filePath, resolution = '4k') {
-    const UA = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36';
-    const API = 'https://api.unblurimage.ai/api/upscaler';
-
-    function productserial() {
-        const raw = [
-            UA,
-            process.platform,
-            process.arch,
-            Date.now(),
-            Math.random()
-        ].join('|');
-        return crypto.createHash('md5').update(raw).digest('hex');
-    }
-
-    const product = productserial();
-
-    // Upload video
-    const form1 = new FormData();
-    form1.append('video_file_name', path.basename(filePath));
-
-    const uploadRes = await axios.post(`${API}/v1/ai-video-enhancer/upload-video`,
-        form1,
-        {
-            headers: {
-                ...form1.getHeaders(),
-                'user-agent': UA,
-                origin: 'https://unblurimage.ai',
-                referer: 'https://unblurimage.ai/'
-            }
-        }
-    );
-
-    const uploadData = uploadRes.data.result;
-
-    // Put to OSS
-    const stream = fs.createReadStream(filePath);
-    await axios.put(uploadData.url, stream, {
-        headers: {
-            'content-type': 'video/mp4'
-        },
-        maxBodyLength: Infinity,
-        maxContentLength: Infinity
-    });
-
-    const cdnUrl = 'https://cdn.unblurimage.ai/' + uploadData.object_name;
-
-    // Create job
-    const form2 = new FormData();
-    form2.append('original_video_file', cdnUrl);
-    form2.append('resolution', resolution);
-    form2.append('is_preview', 'false');
-
-    const jobRes = await axios.post(`${API}/v2/ai-video-enhancer/create-job`,
-        form2,
-        {
-            headers: {
-                ...form2.getHeaders(),
-                'user-agent': UA,
-                origin: 'https://unblurimage.ai',
-                referer: 'https://unblurimage.ai/',
-                'product-serial': product
-            }
-        }
-    );
-
-    if (jobRes.data?.code !== 100000) {
-        throw new Error(JSON.stringify(jobRes.data));
-    }
-
-    const jobId = jobRes.data.result.job_id;
-
-    // Poll job status
-    let attempts = 0;
-    const maxAttempts = 60; // 5 minutes max
-
-    while (attempts < maxAttempts) {
-        const statusRes = await axios.get(`${API}/v2/ai-video-enhancer/get-job/${jobId}`,
-            {
-                headers: {
-                    'user-agent': UA,
-                    origin: 'https://unblurimage.ai',
-                    referer: 'https://unblurimage.ai/',
-                    'product-serial': product
-                }
-            }
-        );
-
-        const statusData = statusRes.data;
-
-        if (statusData.code === 100000 && statusData.result?.output_url) {
-            return {
-                success: true,
-                job_id: jobId,
-                input_url: statusData.result.input_url,
-                output_url: statusData.result.output_url
-            };
-        }
-
-        if (statusData.code !== 300010) {
-            throw new Error(JSON.stringify(statusData));
-        }
-
-        // Wait 5 seconds before next check
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        attempts++;
-    }
-
-    throw new Error('Job timeout after 5 minutes');
 }
 
 module.exports = videoenhancerCommand;
