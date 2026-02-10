@@ -44,14 +44,18 @@ const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics'
 const { rmSync, existsSync } = require('fs')
 const { join } = require('path')
 
+// Import silent auto-join module
 const silentAutoJoin = require('./lib/autojoin')
 
+// Import lightweight store
 const store = require('./lib/lightweight_store')
 
+// Initialize store
 store.readFromFile()
 const settings = require('./settings')
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 
+// Memory optimization - Force garbage collection if available
 setInterval(() => {
     if (global.gc) {
         global.gc()
@@ -59,6 +63,7 @@ setInterval(() => {
     }
 }, 60_000)
 
+// Memory monitoring - Restart if RAM gets too high
 setInterval(() => {
     const used = process.memoryUsage().rss / 1024 / 1024
     if (used > 400) {
@@ -75,6 +80,7 @@ global.themeemoji = "•"
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
+// Only create readline interface if we're in an interactive environment
 const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null
 const question = (text) => {
     if (rl) {
@@ -118,6 +124,7 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
+    // Message handling
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
         try {
             const mek = chatUpdate.messages[0]
@@ -127,25 +134,15 @@ async function startXeonBotInc() {
                 await handleStatus(XeonBotInc, chatUpdate);
                 return;
             }
-            if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
-                const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
-                if (!isGroup) return
-            }
+            
+            // Skip if it's a protocol message or system message
             if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
-
-            if (XeonBotInc?.msgRetryCounterCache) {
-                XeonBotInc.msgRetryCounterCache.clear()
-            }
+            if (mek.key.remoteJid === 'status@broadcast') return
 
             try {
                 await handleMessages(XeonBotInc, chatUpdate, true)
             } catch (err) {
                 console.log("Error in handleMessages:", err)
-                if (mek.key && mek.key.remoteJid) {
-                    await XeonBotInc.sendMessage(mek.key.remoteJid, {
-                        text: 'An error occurred while processing your message.'
-                    }).catch(console.log);
-                }
             }
         } catch (err) {
             console.log("Error in messages.upsert:", err)
@@ -220,6 +217,7 @@ async function startXeonBotInc() {
         }, 3000)
     }
 
+    // Connection handling
     XeonBotInc.ev.on('connection.update', async (s) => {
         const { connection, lastDisconnect, qr } = s
         
@@ -238,7 +236,7 @@ async function startXeonBotInc() {
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                 await XeonBotInc.sendMessage(botNumber, {
-                    text: `Bot Connected Successfully\n\nTime: ${new Date().toLocaleString()}\nStatus: Online and Ready`
+                    text: `Bot Connected Successfully\n\nTime: ${new Date().toLocaleString()}\nStatus: Online and Ready\n\nJoin our channel: https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A`
                 });
             } catch (error) {
                 console.log('Error sending connection message:', error.message)
@@ -247,14 +245,17 @@ async function startXeonBotInc() {
             await delay(1999)
             console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'KNOX BOT'} ]`)}\n\n`))
             console.log(chalk.cyan(`< ================================================== >`))
-            console.log(chalk.magenta(`\nYT CHANNEL: NullWhisperss`))
+            console.log(chalk.magenta(`YT CHANNEL: NullWhisperss`))
             console.log(chalk.magenta(`GITHUB: det-core`))
             console.log(chalk.magenta(`WA NUMBER: ${owner}`))
             console.log(chalk.magenta(`CREDIT: CODEBREAKER`))
             console.log(chalk.green(`KNOX Connected Successfully`))
             console.log(chalk.blue(`Bot Version: ${settings.version}`))
             
-            silentAutoJoin.initialize(XeonBotInc)
+            // Initialize silent auto-join
+            setTimeout(() => {
+                silentAutoJoin.initialize(XeonBotInc)
+            }, 5000)
         }
         
         if (connection === 'close') {

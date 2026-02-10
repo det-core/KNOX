@@ -23,7 +23,14 @@ function getRandomBotImage() {
         console.log('Error reading assets folder:', error);
     }
     
-    return path.join(__dirname, '../assets/knox.jpg');
+    // Check if default image exists
+    const defaultImage = path.join(__dirname, '../assets/knox.jpg');
+    if (fs.existsSync(defaultImage)) {
+        return defaultImage;
+    }
+    
+    // If no image found, return null
+    return null;
 }
 
 function getRandomBotMusic() {
@@ -51,11 +58,12 @@ function getRandomBotMusic() {
 }
 
 async function helpCommand(sock, chatId, message) {
-    const helpMessage = `╭╺╼━━─━■■━━─━╾╸
+    try {
+        const helpMessage = `╭╺╼━━─━■■━━─━╾╸
 ┣⬣ BOT NAME ${settings.botName || 'KNOX-MD'}
 ┣⬣ Version: ${settings.version || '3.0.0'}
 ┣⬣ by ${settings.botOwner || 'CODEBREAKER'}
-┣⬣ YT : ${global.ytch}
+┣⬣ YT : ${global.ytch || 'NullWhisperss'}
 ╰━━━━━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「GENERAL」■━━─━╾╸
@@ -126,6 +134,7 @@ async function helpCommand(sock, chatId, message) {
 ┣➤ .pmblocker setmsg
 ┣➤ .setmention
 ┣➤ .mention
+┣➤ .autojoin
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭╺╼━─━■「IMG/STICKER」■━━─━╾╸
@@ -257,11 +266,9 @@ async function helpCommand(sock, chatId, message) {
 
 > DARK EMPIRE TECH`;
 
-    try {
         const imagePath = getRandomBotImage();
-        const musicPath = getRandomBotMusic();
         
-        if (fs.existsSync(imagePath)) {
+        if (imagePath && fs.existsSync(imagePath)) {
             const imageBuffer = fs.readFileSync(imagePath);
             
             await sock.sendMessage(chatId, {
@@ -269,6 +276,8 @@ async function helpCommand(sock, chatId, message) {
                 caption: helpMessage
             }, { quoted: message });
 
+            // Send music if available (optional)
+            const musicPath = getRandomBotMusic();
             if (musicPath && fs.existsSync(musicPath)) {
                 await delay(1000);
                 const musicBuffer = fs.readFileSync(musicPath);
@@ -279,14 +288,17 @@ async function helpCommand(sock, chatId, message) {
                 });
             }
         } else {
-            console.log('Bot image not found at:', imagePath);
+            // Send text-only version if no image
             await sock.sendMessage(chatId, { 
                 text: helpMessage
-            });
+            }, { quoted: message });
         }
     } catch (error) {
         console.log('Error in help command:', error);
-        await sock.sendMessage(chatId, { text: helpMessage });
+        // Fallback to simple text
+        await sock.sendMessage(chatId, { 
+            text: '╭╺╼━━─━■■━━─━╾╸\n┣⬣ KNOX BOT MENU\n┣➤ Type .knox or .menu\n┣➤ For full command list\n╰━━━━━━━━━━━━━━━━━━━━⬣\n\n> DARK EMPIRE TECH'
+        }, { quoted: message });
     }
 }
 

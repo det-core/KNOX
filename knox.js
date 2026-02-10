@@ -374,6 +374,11 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 commandExecuted = true;
                 break;
             }
+            case userMessage === '.test':
+                const testCommand = require('./commands/test');
+                await testCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await kickCommand(sock, chatId, senderId, mentionedJidListKick, message);
