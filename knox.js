@@ -40,6 +40,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const saveCommand = require('./commands/save');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
 const banCommand = require('./commands/ban');
@@ -589,6 +590,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 } else {
                     await sock.sendMessage(chatId, { text: 'Please specify a city, e.g., .weather London', ...channelInfo }, { quoted: message });
                 }
+                break;
+            case userMessage === '.save':
+                await saveCommand(sock, chatId, message);
+                commandExecuted = true;
                 break;
             case userMessage === '.news':
                 await newsCommand(sock, chatId);

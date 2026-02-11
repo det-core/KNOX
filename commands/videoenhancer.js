@@ -77,7 +77,7 @@ async function videoenhancerCommand(sock, chatId, message) {
                     '-crf 18',
                     '-c:a aac',
                     '-b:a 192k',
-                    '-vf', `scale=${dimensions[resolution]}`,
+                    '-vf', `scale=${dimensions[resolution]}:flags=lanczos`,
                     '-pix_fmt yuv420p'
                 ])
                 .output(outputPath)
