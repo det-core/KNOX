@@ -236,7 +236,7 @@ async function startXeonBotInc() {
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                 await XeonBotInc.sendMessage(botNumber, {
-                    text: `Bot Connected Successfully\n\nTime: ${new Date().toLocaleString()}\nStatus: Online and Ready\n\nJoin our channel: https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A`
+                    text: `Bot Connected Successfully\n\nTime: ${new Date().toLocaleString()}\nStatus: Online and Ready\n\nJoin our channel: https://whatsapp.com/channel/0029VbBwJYo6BIEp0Xlm1G0S`
                 });
             } catch (error) {
                 console.log('Error sending connection message:', error.message)
